@@ -1,17 +1,28 @@
 #!/usr/bin/env python3
 
-from flask import redirect
-from setup import api, app
+from flask import Flask, redirect
+from flask_migrate import Migrate
+from flask_smorest import Api
+
+from models import db
+from default_config import DefaultConfig
 from views.planet import blp as PlanetBlueprint
 from views.moon import blp as MoonBlueprint
 
+app = Flask(__name__)
+app.config.from_object(DefaultConfig)
+app.json.compact = False
+
+Migrate(app, db)
+db.init_app(app)
+
+api = Api(app)
 api.register_blueprint(PlanetBlueprint)
 api.register_blueprint(MoonBlueprint)
 
 
 @app.route('/')
 def index():
-    # return f'<h2><a href={app.config["OPENAPI_SWAGGER_UI_PATH"]}>{app.config["API_TITLE"]}</a></h2>'
     return redirect(app.config["OPENAPI_SWAGGER_UI_PATH"])
 
 

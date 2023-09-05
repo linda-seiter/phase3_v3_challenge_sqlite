@@ -2,8 +2,7 @@ from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import SQLAlchemyError
 
-from setup import db
-from models import Planet
+from models import db, Planet
 from views.schemas import PlanetSchema
 
 blp = Blueprint("Planet API", __name__, description="Operations on planets")
@@ -44,8 +43,13 @@ class PlanetsById(MethodView):
     def delete(self, planet_id):
         """Delete planet by id"""
         planet = db.get_or_404(Planet, planet_id)
-        db.session.delete(planet)
-        db.session.commit()
+        try:
+            db.session.delete(planet)
+            db.session.commit()
+        except SQLAlchemyError as err:
+            db.session.rollback()
+            abort(400, planet=err.__class__.__name__,
+                  errors=[str(x) for x in err.args])
 
     @blp.arguments(PlanetSchema)
     @blp.response(200, PlanetSchema)

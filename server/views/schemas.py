@@ -1,7 +1,6 @@
 from marshmallow import Schema, fields, validates, ValidationError
 from marshmallow.validate import Length, Range
-from models import Planet
-from setup import db
+from models import db, Planet
 
 
 class MoonSchema(Schema):
@@ -22,14 +21,7 @@ class MoonSchema(Schema):
 class PlanetSchema(Schema):
 
     id = fields.Int(dump_only=True)
-    name = fields.Str(required=True)
+    name = fields.Str(required=True, validate=Length(
+        min=1, error="Must not be empty string."))
     distance_from_sun = fields.Int(required=True, validate=Range(min=0))
     moons = fields.List(fields.Nested(MoonSchema), dump_only=True)
-
-    @validates("name")
-    def unique(self, value):
-        """name is not empty string and is unique"""
-        if not value:
-            raise ValidationError("Must not be empty string.")
-        if db.session.execute(db.select(Planet).filter_by(name=value)).one_or_none():
-            raise ValidationError("Must be unique")

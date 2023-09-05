@@ -2,8 +2,7 @@ from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import SQLAlchemyError
 
-from setup import db
-from models import Moon
+from models import db, Moon
 from views.schemas import MoonSchema
 
 blp = Blueprint("Moon API", __name__, description="Operations on moons")
@@ -20,8 +19,8 @@ class Moons(MethodView):
     @blp.response(201, MoonSchema)
     def post(self, fields):
         """Insert a new moon"""
+        moon = Moon(**fields)
         try:
-            moon = Moon(**fields)
             db.session.add(moon)
             db.session.commit()
         except SQLAlchemyError as err:
@@ -42,8 +41,13 @@ class MoonById(MethodView):
     def delete(self, moon_id):
         """Delete moon by id"""
         moon = db.get_or_404(Moon, moon_id)
-        db.session.delete(moon)
-        db.session.commit()
+        try:
+            db.session.delete(moon)
+            db.session.commit()
+        except SQLAlchemyError as err:
+            db.session.rollback()
+            abort(400, moon=err.__class__.__name__,
+                  errors=[str(x) for x in err.args])
 
     @blp.arguments(MoonSchema)
     @blp.response(200, MoonSchema)
