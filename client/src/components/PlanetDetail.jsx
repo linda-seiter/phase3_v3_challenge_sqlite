@@ -46,6 +46,19 @@ function PlanetDetail() {
     setShowEdit(false);
   }
 
+  function handleUpdateMoon(updatedMoon) {
+    setPlanet({
+      error,
+      status,
+      data: {
+        ...planet,
+        moons: planet.moons.map((m) =>
+          m.id === updatedMoon.id ? updatedMoon : m
+        ),
+      },
+    });
+  }
+
   function handleDeleteMoon(id) {
     fetch(`/moons/${id}`, { method: "DELETE" }).then((r) => {
       if (r.ok) {
@@ -62,7 +75,12 @@ function PlanetDetail() {
   }
 
   const moonCards = planet?.moons.map((moon) => (
-    <MoonCard key={moon.id} moon={moon} onDelete={handleDeleteMoon} />
+    <MoonCard
+      key={moon.id}
+      moon={moon}
+      onDelete={handleDeleteMoon}
+      onUpdate={handleUpdateMoon}
+    />
   ));
 
   if (status === "pending") return <h2>Loading...</h2>;
