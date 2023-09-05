@@ -9,6 +9,28 @@ from views.schemas import MoonSchema
 blp = Blueprint("Moon API", __name__, description="Operations on moons")
 
 
+@blp.route("/moons")
+class Moons(MethodView):
+    @blp.response(200, MoonSchema(many=True))
+    def get(self):
+        """List moons"""
+        return db.session.scalars(db.select(Moon))
+
+    @blp.arguments(MoonSchema)
+    @blp.response(201, MoonSchema)
+    def post(self, fields):
+        """Insert a new moon"""
+        try:
+            moon = Moon(**fields)
+            db.session.add(moon)
+            db.session.commit()
+        except SQLAlchemyError as err:
+            db.session.rollback()
+            abort(400, moon=err.__class__.__name__,
+                  errors=[str(x) for x in err.args])
+        return moon
+
+
 @blp.route("/moons/<int:moon_id>")
 class MoonById(MethodView):
     @blp.response(200, MoonSchema)
@@ -31,28 +53,6 @@ class MoonById(MethodView):
             moon = db.get_or_404(Moon, moon_id)
             for key, value in fields.items():
                 setattr(moon, key, value)
-            db.session.commit()
-        except SQLAlchemyError as err:
-            db.session.rollback()
-            abort(400, moon=err.__class__.__name__,
-                  errors=[str(x) for x in err.args])
-        return moon
-
-
-@blp.route("/moons")
-class Moons(MethodView):
-    @blp.response(200, MoonSchema(many=True))
-    def get(self):
-        """List moons"""
-        return db.session.scalars(db.select(Moon))
-
-    @blp.arguments(MoonSchema)
-    @blp.response(201, MoonSchema)
-    def post(self, fields):
-        """Insert a new moon"""
-        try:
-            moon = Moon(**fields)
-            db.session.add(moon)
             db.session.commit()
         except SQLAlchemyError as err:
             db.session.rollback()

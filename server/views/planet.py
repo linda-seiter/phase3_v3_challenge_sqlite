@@ -3,14 +3,38 @@ from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import SQLAlchemyError
 
 from setup import db
-from models import Planet, Moon
-from views.schemas import PlanetSchema, MoonSchema
+from models import Planet
+from views.schemas import PlanetSchema
 
 blp = Blueprint("Planet API", __name__, description="Operations on planets")
 
 
+@blp.route("/planets")
+class Planets(MethodView):
+
+    @blp.response(200, PlanetSchema(many=True))
+    def get(self):
+        """List planets"""
+        return db.session.scalars(db.select(Planet))
+
+    @blp.arguments(PlanetSchema)
+    @blp.response(201, PlanetSchema)
+    def post(self, fields):
+        """Insert a new planet"""
+        planet = Planet(**fields)
+        try:
+            db.session.add(planet)
+            db.session.commit()
+        except SQLAlchemyError as err:
+            db.session.rollback()
+            abort(400, planet=err.__class__.__name__,
+                  errors=[str(x) for x in err.args])
+        return planet
+
+
 @blp.route("/planets/<int:planet_id>")
-class PlanetById(MethodView):
+class PlanetsById(MethodView):
+
     @blp.response(200, PlanetSchema)
     def get(self, planet_id):
         """Get planet by id"""
@@ -31,28 +55,6 @@ class PlanetById(MethodView):
         for key, value in fields.items():
             setattr(planet, key, value)
         try:
-            db.session.commit()
-        except SQLAlchemyError as err:
-            db.session.rollback()
-            abort(400, planet=err.__class__.__name__,
-                  errors=[str(x) for x in err.args])
-        return planet
-
-
-@blp.route("/planets")
-class Planets(MethodView):
-    @blp.response(200, PlanetSchema(many=True))
-    def get(self):
-        """List planets"""
-        return db.session.scalars(db.select(Planet))
-
-    @blp.arguments(PlanetSchema)
-    @blp.response(201, PlanetSchema)
-    def post(self, fields):
-        """Insert a new planet"""
-        planet = Planet(**fields)
-        try:
-            db.session.add(planet)
             db.session.commit()
         except SQLAlchemyError as err:
             db.session.rollback()

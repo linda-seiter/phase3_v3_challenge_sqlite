@@ -10,6 +10,7 @@ function PlanetDetail() {
     error: null,
     status: "pending",
   });
+
   const [showEdit, setShowEdit] = useState(false);
 
   const { id } = useParams();
