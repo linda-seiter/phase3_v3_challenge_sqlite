@@ -52,8 +52,8 @@ function PlanetDetail() {
       status,
       data: {
         ...planet,
-        moons: planet.moons.map((m) =>
-          m.id === updatedMoon.id ? updatedMoon : m
+        moons: planet.moons.map((moon) =>
+          moon.id === updatedMoon.id ? updatedMoon : moon
         ),
       },
     });
