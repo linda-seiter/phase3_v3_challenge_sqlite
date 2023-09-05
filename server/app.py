@@ -4,7 +4,7 @@ from flask import Flask, redirect
 from flask_migrate import Migrate
 from flask_smorest import Api
 
-from models import db
+from model import db
 from default_config import DefaultConfig
 from views.planet import blp as PlanetBlueprint
 from views.moon import blp as MoonBlueprint

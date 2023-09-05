@@ -2,8 +2,8 @@ from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import SQLAlchemyError
 
-from models import db, Planet
-from views.schemas import PlanetSchema
+from model import db, Planet
+from views.schema import PlanetSchema
 
 blp = Blueprint("Planet API", __name__, description="Operations on planets")
 
