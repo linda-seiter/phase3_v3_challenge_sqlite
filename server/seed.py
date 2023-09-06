@@ -1,7 +1,7 @@
 from sqlalchemy import delete
 
 from app import app
-from model import db, Planet, Moon
+from models import db, Planet, Moon
 
 
 def seed():

@@ -4,7 +4,7 @@ from flask import Flask, redirect
 from flask_migrate import Migrate
 from flask_smorest import Api
 
-from model import db
+from models import db
 from default_config import DefaultConfig
 from views.planet import blp as PlanetBlueprint
 from views.moon import blp as MoonBlueprint
@@ -15,6 +15,15 @@ app.json.compact = False
 
 Migrate(app, db)
 db.init_app(app)
+# Ensure FOREIGN KEY for sqlite3
+if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+    def _fk_pragma_on_connect(dbapi_con, con_record):  # noqa
+        dbapi_con.execute('pragma foreign_keys=ON')
+
+    with app.app_context():
+        from sqlalchemy import event
+        event.listen(db.engine, 'connect', _fk_pragma_on_connect)
+
 
 api = Api(app)
 api.register_blueprint(PlanetBlueprint)
