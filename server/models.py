@@ -21,6 +21,11 @@ class Planet(db.Model):
     moons = db.relationship(
         "Moon", back_populates="planet", cascade="all, delete-orphan")
     
+    __table_args__ = (
+        db.CheckConstraint("length(name) > 0", name="name_not_empty"),
+        db.CheckConstraint("distance_from_sun > 0", name="distance_from_sun_positive")
+    )
+    
 class Moon(db.Model):
     """Moon model"""
     __tablename__ = "moons"
@@ -31,3 +36,8 @@ class Moon(db.Model):
 
     planet_id = db.Column(db.Integer, db.ForeignKey("planets.id"), nullable=False)
     planet = db.relationship("Planet", back_populates="moons")
+
+    __table_args__ = (
+        db.CheckConstraint("length(name) > 0", name="name_not_empty"),
+        db.CheckConstraint("orbital_period > 0", name="orbital_period_positive")
+    )

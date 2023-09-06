@@ -6,7 +6,7 @@ class MoonSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(required=True, validate=Length(
         min=1, error="Must not be empty string."))
-    orbital_period = fields.Float(required=True, validate=Range(min=0))
+    orbital_period = fields.Float(required=True, validate=Range(min=0, min_inclusive=False))
     planet_id = fields.Int(required=True)
     planet = fields.Nested(lambda: PlanetSchema(exclude=("moons",)), dump_only=True)
 
@@ -15,5 +15,5 @@ class PlanetSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(required=True, validate=Length(
         min=1, error="Must not be empty string."))
-    distance_from_sun = fields.Int(required=True, validate=Range(min=0))
+    distance_from_sun = fields.Int(required=True, validate=Range(min=0, min_inclusive=False))
     moons = fields.List(fields.Nested(MoonSchema(exclude=("planet",))), dump_only=True)
