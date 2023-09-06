@@ -3,6 +3,7 @@
 from flask import Flask, redirect
 from flask_migrate import Migrate
 from flask_smorest import Api
+import warnings
 
 from models import db
 from default_config import DefaultConfig
@@ -24,11 +25,16 @@ if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
         from sqlalchemy import event
         event.listen(db.engine, 'connect', _fk_pragma_on_connect)
 
+# Prevent warnings about nested schemas
+with app.app_context():
+    warnings.filterwarnings(
+            "ignore",
+            message="Multiple schemas resolved to the name "
+        )
 
 api = Api(app)
 api.register_blueprint(PlanetBlueprint)
 api.register_blueprint(MoonBlueprint)
-
 
 @app.route('/')
 def index():
